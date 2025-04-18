@@ -1,0 +1,40 @@
+name: "Mern App"
+services:
+  api:
+    container_name: node-app
+    build: 
+      context: ./API-jokes
+      dockerfile: Dockerfile.prod
+    image: node-api-image
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./env/server.prod.env
+    networks:
+      - server-net
+    develop:
+      watch:
+        - path: ./API-jokes
+          action: sync
+          target: /app
+          ignore:
+            - node_modules
+  client:
+    container_name: react-app
+    depends_on:
+      - api
+    build: 
+      context: ./react-client
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_API_BASE_URL: http://localhost:5000
+    image: react-client-image
+    ports:
+      - "80:80"
+    networks:
+      - server-net
+
+volumes:
+  mongodbdata:
+networks:
+  server-net:
